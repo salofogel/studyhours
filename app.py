@@ -4,25 +4,25 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import zipfile
 
-# Configuración de la página
+# Page setup
 st.set_page_config(page_title="Student Exam Analysis", layout="wide")
 st.title("📊 Student Exam Performance Dashboard")
 
-# Sidebar con navegación
-st.sidebar.title("Navegación")
+# Sidebar navigation menu
+st.sidebar.title("Navigation")
 section = st.sidebar.radio(
-    "Selecciona una sección:",
+    "Select a section:",
     [
-        "📁 Cargar Datos",
-        "🔍 Vista Previa del Dataset",
-        "📈 Histogramas",
-        "💼 Trabajo de Medio Tiempo vs Nota",
-        "📱 Tiempo de Pantalla vs Nota",
-        "📚 Estudio vs Nota"
+        "📁 Upload Data",
+        "🔍 Dataset Preview",
+        "📈 Histograms",
+        "💼 Part-Time Job vs Exam Score",
+        "📱 Screen Time vs Exam Score",
+        "📚 Study Time vs Exam Score"
     ]
 )
 
-# Cargar archivo ZIP
+# Function to load and process data
 @st.cache_data
 def load_data(uploaded_file):
     with zipfile.ZipFile(uploaded_file) as z:
@@ -35,36 +35,37 @@ def load_data(uploaded_file):
             df["total_screen_time"] = df["social_media_hours"] + df["netflix_hours"]
             return df
 
-uploaded_file = st.sidebar.file_uploader("Sube tu archivo ZIP con el dataset", type="zip")
+# Upload data
+uploaded_file = st.sidebar.file_uploader("Upload your ZIP file with the dataset", type="zip")
 df = load_data(uploaded_file) if uploaded_file else None
 
-# Secciones según el botón seleccionado
-if section == "📁 Cargar Datos":
-    st.header("📁 Cargar Datos")
+# Section logic
+if section == "📁 Upload Data":
+    st.header("📁 Upload Data")
     st.markdown("""
-    Sube un archivo `.zip` que contenga un archivo `.csv` con información de estudiantes, como horas de estudio, sueño, trabajo, salud mental, etc.
-    El análisis se centrará en cómo estos factores influyen en las **notas de los exámenes**.
+    Upload a `.zip` file that contains a `.csv` dataset about students (study hours, sleep, part-time job, mental health, etc.).
+    This app will explore how those factors affect **exam performance**.
     """)
     if uploaded_file:
-        st.success("✅ Archivo cargado correctamente.")
-        st.write("Puedes continuar navegando por el menú para ver los análisis.")
+        st.success("✅ File uploaded successfully.")
+        st.write("You can now explore the dashboard using the menu on the left.")
     else:
-        st.warning("Por favor sube un archivo para continuar.")
+        st.warning("Please upload a file to continue.")
 
-elif section == "🔍 Vista Previa del Dataset":
+elif section == "🔍 Dataset Preview":
     if df is not None:
-        st.header("🔍 Vista Previa del Dataset")
-        st.markdown("Aquí puedes ver las primeras filas del dataset que has cargado:")
+        st.header("🔍 Dataset Preview")
+        st.markdown("Here’s a look at the first few rows of the uploaded dataset:")
         st.dataframe(df.head())
     else:
-        st.error("Por favor sube un archivo ZIP válido primero.")
+        st.error("Please upload a valid ZIP file first.")
 
-elif section == "📈 Histogramas":
+elif section == "📈 Histograms":
     if df is not None:
-        st.header("📈 Histogramas de Variables Numéricas")
+        st.header("📈 Histograms of Numeric Features")
         st.markdown("""
-        Estos histogramas muestran la distribución de variables numéricas como edad, horas de sueño, ejercicio y nota del examen.
-        Las curvas KDE (en azul claro) ayudan a entender la forma de la distribución.
+        These histograms show the distribution of numeric variables like age, study hours, exercise, and exam scores.
+        The KDE (blue curve) helps visualize the shape of the distribution more clearly.
         """)
         num_cols = df.select_dtypes("number").columns
         cols = 3
@@ -82,14 +83,14 @@ elif section == "📈 Histogramas":
 
         st.pyplot(fig)
     else:
-        st.error("Por favor sube un archivo ZIP válido primero.")
+        st.error("Please upload a valid ZIP file first.")
 
-elif section == "💼 Trabajo de Medio Tiempo vs Nota":
+elif section == "💼 Part-Time Job vs Exam Score":
     if df is not None:
-        st.header("💼 Promedio de Nota según Trabajo de Medio Tiempo")
+        st.header("💼 Average Exam Score by Part-Time Job Status")
         st.markdown("""
-        Este gráfico compara las notas promedio de los estudiantes que **tienen** y **no tienen** trabajo de medio tiempo.
-        Puede revelar si trabajar afecta el rendimiento académico.
+        This bar chart compares the average exam scores between students who **do** and **do not** have a part-time job.
+        It helps analyze if working impacts academic performance.
         """)
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.barplot(data=df, x="part_time_job", y="exam_score", ci="sd", palette="pastel", ax=ax)
@@ -98,14 +99,14 @@ elif section == "💼 Trabajo de Medio Tiempo vs Nota":
         ax.set_ylabel("Average Exam Score")
         st.pyplot(fig)
     else:
-        st.error("Por favor sube un archivo ZIP válido primero.")
+        st.error("Please upload a valid ZIP file first.")
 
-elif section == "📱 Tiempo de Pantalla vs Nota":
+elif section == "📱 Screen Time vs Exam Score":
     if df is not None:
-        st.header("📱 Tiempo Total de Pantalla vs Nota de Examen")
+        st.header("📱 Total Screen Time vs Exam Score")
         st.markdown("""
-        Esta regresión muestra la relación entre **el tiempo en redes sociales y Netflix** (combinado como tiempo total de pantalla)
-        y la nota del examen. La línea roja indica una tendencia general: ¿más pantalla = peores notas?
+        This regression plot shows the relationship between total screen time (sum of social media and Netflix hours)
+        and exam scores. The red line shows the general trend: is more screen time linked to lower scores?
         """)
         fig, ax = plt.subplots(figsize=(8, 5))
         sns.regplot(data=df, x="total_screen_time", y="exam_score",
@@ -115,14 +116,14 @@ elif section == "📱 Tiempo de Pantalla vs Nota":
         ax.set_ylabel("Exam Score")
         st.pyplot(fig)
     else:
-        st.error("Por favor sube un archivo ZIP válido primero.")
+        st.error("Please upload a valid ZIP file first.")
 
-elif section == "📚 Estudio vs Nota":
+elif section == "📚 Study Time vs Exam Score":
     if df is not None:
-        st.header("📚 Horas de Estudio vs Nota de Examen")
+        st.header("📚 Study Hours vs Exam Score")
         st.markdown("""
-        Este gráfico muestra cómo las **horas diarias de estudio** se relacionan con la nota del examen.
-        Se espera ver una relación positiva (más estudio = mejores resultados), aunque con variabilidad.
+        This scatter plot shows how daily study hours relate to exam scores.
+        A positive correlation is expected — more study time could lead to better results, though with variability.
         """)
         df_clean = df.dropna(subset=["study_hours_per_day", "exam_score"])
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -133,4 +134,4 @@ elif section == "📚 Estudio vs Nota":
         ax.grid(True)
         st.pyplot(fig)
     else:
-        st.error("Por favor sube un archivo ZIP válido primero.")
+        st.error("Please upload a valid ZIP file first.")
