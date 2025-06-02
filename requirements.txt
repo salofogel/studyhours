@@ -1,5 +1,6 @@
-pandas
-seaborn
-matplotlib
-gdown
 streamlit
+pandas
+matplotlib
+seaborn
+gdown
+
