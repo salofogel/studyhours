@@ -1,5 +1,7 @@
 # Install and import necessary libraries
-!pip install -q gdown
+import subprocess
+subprocess.check_call(["pip", "install", "gdown"])
+
 import gdown
 import pandas as pd
 import seaborn as sns
